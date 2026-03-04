@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "local-inmemory": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5087",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "LocalInMemory",
+        "DOTNET_ENVIRONMENT": "LocalInMemory"
+      }
+    },
+    "local-postgres": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5087",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "LocalPostgres",
+        "DOTNET_ENVIRONMENT": "LocalPostgres"
+      }
+    }
+  }
+}

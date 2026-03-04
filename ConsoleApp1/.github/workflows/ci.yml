@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-test:
+    name: Build and Test (.NET 10)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          dotnet-quality: preview
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/packages.lock.json
+
+      - name: Restore
+        run: dotnet restore ConsoleApp1.slnx
+
+      - name: Build
+        run: dotnet build ConsoleApp1.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ConsoleApp1.Tests/ConsoleApp1.Tests.csproj --configuration Release --no-build --results-directory TestResults --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+
+      - name: Generate coverage summary
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.6
+        with:
+          reports: TestResults/**/coverage.cobertura.xml
+          targetdir: TestResults/CoverageReport
+          reporttypes: MarkdownSummary;HtmlInline_AzurePipelines;Cobertura
+
+      - name: Upload coverage files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            TestResults/**/coverage.cobertura.xml
+            TestResults/CoverageReport/**
+          if-no-files-found: error
+
+      - name: Upload coverage to Codecov (optional)
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: TestResults/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+          use_oidc: true
+          verbose: true
+
+      - name: Upload test results (.trx)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-trx
+          path: TestResults/**/*.trx
+          if-no-files-found: error

@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel ERP - Console Operacional</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0f1116;
+      color: #e6e8ee;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+    .sidebar {
+      border-right: 1px solid #282f3f;
+      background: #121722;
+      padding: 18px 14px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+    .brand {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0 0 4px;
+    }
+    .subtitle {
+      margin: 0 0 16px;
+      color: #9fa7b7;
+      font-size: .82rem;
+    }
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+    .nav a {
+      text-decoration: none;
+      color: #d6dcee;
+      border: 1px solid #2a3142;
+      background: #151b28;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: .9rem;
+    }
+    .nav a:hover {
+      border-color: #3d4c73;
+      background: #1a2335;
+    }
+    .main {
+      padding: 18px;
+      max-width: 1400px;
+      width: 100%;
+    }
+    .hero {
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+    .hero p {
+      margin: 6px 0 0;
+      color: #9fa7b7;
+    }
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: #161a22;
+      border: 1px solid #282f3f;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .state {
+      font-size: .72rem;
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid #3a4254;
+      color: #cdd6ec;
+      background: #171f31;
+    }
+    .state.loading { border-color: #6a5528; color: #f3cc79; }
+    .state.success { border-color: #265944; color: #7be2ad; }
+    .state.error { border-color: #6b2d3a; color: #ff9fb1; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap: 8px;
+    }
+    .grid-1 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    label {
+      display: block;
+      font-size: .82rem;
+      color: #9fa7b7;
+    }
+    input, select, button {
+      width: 100%;
+      margin-top: 4px;
+      border-radius: 8px;
+      border: 1px solid #2f3648;
+      background: #0f1116;
+      color: #e6e8ee;
+      padding: 8px;
+    }
+    button {
+      margin-top: 8px;
+      background: #2a6df4;
+      border-color: #2a6df4;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #222838;
+      border-color: #3a455f;
+    }
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+    .table-wrap {
+      margin-top: 10px;
+      border: 1px solid #232a38;
+      border-radius: 10px;
+      overflow: auto;
+      max-height: 260px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .86rem;
+    }
+    th, td {
+      border-bottom: 1px solid #242b3a;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #131926;
+      color: #b8c2db;
+      font-weight: 600;
+    }
+    .th-btn {
+      width: 100%;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      text-align: left;
+      color: inherit;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+    }
+    .toolbar {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      margin-top: 8px;
+    }
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .toolbar-actions button {
+      width: auto;
+      margin-top: 0;
+      padding: 8px 12px;
+    }
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .pager .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pager .controls button {
+      width: auto;
+      margin: 0;
+      padding: 6px 12px;
+    }
+    .pager .controls select {
+      width: auto;
+      margin: 0;
+      padding: 6px 10px;
+    }
+    .small {
+      color: #9fa7b7;
+      font-size: .8rem;
+    }
+    .empty {
+      color: #9fa7b7;
+      font-size: .85rem;
+      margin-top: 8px;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0d1016;
+      border: 1px solid #232a38;
+      padding: 8px;
+      border-radius: 8px;
+      max-height: 220px;
+      overflow: auto;
+      margin-top: 8px;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid #282f3f;
+      }
+      .grid-2 { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand">Hotel ERP</p>
+    <p class="subtitle">Console operacional</p>
+    <nav class="nav">
+      <a href="#auth">Autenticação</a>
+      <a href="#availability">Disponibilidade</a>
+      <a href="#reservation">Reservas</a>
+      <a href="#housekeeping">Housekeeping</a>
+      <a href="#audit">Auditoria</a>
+      <a href="#health">Saúde do sistema</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="hero">
+      <h1>Painel Operacional</h1>
+      <p>Interface para operação e validação do backend sem alterar contratos de API.</p>
+    </div>
+
+    <div class="cards">
+      <section class="card" id="auth">
+        <div class="card-head">
+          <h3>Autenticação</h3>
+          <span class="state" id="authState">idle</span>
+        </div>
+        <div class="grid-1">
+          <label>Client ID <input id="clientId" value="hotel-ops" /></label>
+          <label>Client Secret <input id="clientSecret" value="hotel-ops-secret" /></label>
+          <label>Scope <input id="scope" value="hotel.full" /></label>
+          <button id="authBtn" onclick="issueToken()">Emitir token</button>
+        </div>
+        <pre id="authOut">Aguardando...</pre>
+      </section>
+
+      <section class="card" id="availability">
+        <div class="card-head">
+          <h3>Disponibilidade</h3>
+          <span class="state" id="availabilityState">idle</span>
+        </div>
+        <div class="grid-2">
+          <label>Check-in <input type="date" id="checkIn" /></label>
+          <label>Check-out <input type="date" id="checkOut" /></label>
+        </div>
+        <label>Tipo (opcional) <input id="roomType" placeholder="standard/suite/luxo" /></label>
+        <button id="availabilityBtn" onclick="getAvailability()">Consultar disponibilidade</button>
+        <div class="table-wrap" id="availabilityTableWrap"></div>
+        <pre id="availabilityOut">Aguardando...</pre>
+      </section>
+
+      <section class="card" id="reservation">
+        <div class="card-head">
+          <h3>Criar reserva</h3>
+          <span class="state" id="reservationState">idle</span>
+        </div>
+        <div class="grid-1">
+          <label>Room ID <input id="reserveRoomId" placeholder="Selecione da disponibilidade" /></label>
+          <label>Hóspede <input id="guestName" value="Gabriel Teste" /></label>
+          <div class="grid-2">
+            <label>Check-in <input type="date" id="reserveIn" /></label>
+            <label>Check-out <input type="date" id="reserveOut" /></label>
+          </div>
+          <div class="grid-2">
+            <label>Canal <input id="sourceChannel" value="direct" /></label>
+            <label>Early check-in
+              <select id="early">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </label>
+          </div>
+          <button id="reservationBtn" onclick="createReservation()">Criar reserva</button>
+        </div>
+        <pre id="reserveOutBox">Aguardando...</pre>
+      </section>
+
+      <section class="card" id="housekeeping">
+        <div class="card-head">
+          <h3>Housekeeping</h3>
+          <span class="state" id="houseState">idle</span>
+        </div>
+        <div class="grid-2">
+          <label>Data operação <input type="date" id="opDate" /></label>
+          <label>&nbsp;
+            <button id="houseBtn" class="secondary" onclick="getHousekeeping()">Gerar rota</button>
+          </label>
+        </div>
+        <div class="table-wrap" id="houseTableWrap"></div>
+        <pre id="houseOut">Aguardando...</pre>
+      </section>
+
+      <section class="card" id="audit">
+        <div class="card-head">
+          <h3>Auditoria</h3>
+          <span class="state" id="auditState">idle</span>
+        </div>
+        <div class="grid-2">
+          <label>Página API <input id="auditPage" value="1" /></label>
+          <label>Tamanho API <input id="auditSize" value="100" /></label>
+        </div>
+        <button id="auditBtn" onclick="getAudit()">Consultar logs</button>
+
+        <div class="toolbar">
+          <label>Filtro evento
+            <input id="auditFilterEvent" placeholder="ex: token_issued" oninput="applyAuditGrid()" />
+          </label>
+          <label>Filtro resultado
+            <select id="auditFilterResult" onchange="applyAuditGrid()">
+              <option value="">Todos</option>
+              <option value="success">success</option>
+              <option value="failed">failed</option>
+              <option value="error">error</option>
+            </select>
+          </label>
+          <label>Busca rápida (IP/Trace)
+            <input id="auditFilterSearch" placeholder="ip, trace, action..." oninput="applyAuditGrid()" />
+          </label>
+        </div>
+        <div class="toolbar-actions">
+          <button class="secondary" id="auditClearFilters" onclick="clearAuditFilters()">Limpar filtros</button>
+          <button class="secondary" id="auditExportBtn" onclick="exportAuditCsv()">Exportar CSV (filtro atual)</button>
+        </div>
+
+        <div class="table-wrap" id="auditTableWrap"></div>
+        <div class="pager" id="auditPager">
+          <span class="small" id="auditPagerInfo">0 itens</span>
+          <div class="controls">
+            <label class="small">Itens/página
+              <select id="auditLocalPageSize" onchange="changeAuditPageSize()">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+            <button class="secondary" id="auditPrevBtn" onclick="changeAuditPage(-1)">Anterior</button>
+            <button class="secondary" id="auditNextBtn" onclick="changeAuditPage(1)">Próxima</button>
+          </div>
+        </div>
+        <pre id="auditOut">Aguardando...</pre>
+      </section>
+
+      <section class="card" id="health">
+        <div class="card-head">
+          <h3>Saúde do sistema</h3>
+          <span class="state" id="healthState">idle</span>
+        </div>
+        <button id="healthBtn" class="secondary" onclick="checkHealth()">Checar health</button>
+        <pre id="healthOut">Aguardando...</pre>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  let accessToken = "";
+  const auditGrid = {
+    rawRows: [],
+    filteredRows: [],
+    page: 1,
+    pageSize: 10,
+    sortBy: 'date',
+    sortDir: 'desc'
+  };
+
+  function setActionState(name, state, message = '') {
+    const badge = document.getElementById(`${name}State`);
+    if (!badge) return;
+    badge.className = `state ${state === 'idle' ? '' : state}`.trim();
+    badge.textContent = message ? `${state} • ${message}` : state;
+  }
+
+  function setButtonBusy(buttonId, busy) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    button.disabled = busy;
+  }
+
+  function errorToText(error) {
+    const payload = error?.data ? error.data : error;
+    return JSON.stringify(payload, null, 2);
+  }
+
+  function setTodayDefaults() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const inDate = new Date(now); inDate.setDate(inDate.getDate() + 1);
+    const outDate = new Date(now); outDate.setDate(outDate.getDate() + 2);
+
+    document.getElementById('checkIn').value = fmt(inDate);
+    document.getElementById('checkOut').value = fmt(outDate);
+    document.getElementById('reserveIn').value = fmt(inDate);
+    document.getElementById('reserveOut').value = fmt(outDate);
+    document.getElementById('opDate').value = fmt(now);
+  }
+
+  async function api(path, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+    const response = await fetch(path, { ...options, headers });
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = text; }
+    if (!response.ok) throw { status: response.status, data };
+    return data;
+  }
+
+  function show(id, data) {
+    document.getElementById(id).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  }
+
+  function renderTable(targetId, rows, columns, emptyMessage = 'Sem dados para exibir.') {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      target.innerHTML = `<div class="empty">${emptyMessage}</div>`;
+      return;
+    }
+
+    const header = columns.map(column => `<th>${column.label}</th>`).join('');
+    const body = rows.map(row => {
+      const cells = columns.map(column => `<td>${column.get(row)}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+
+    target.innerHTML = `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+  }
+
+  function safeValue(value) {
+    if (value === null || value === undefined || value === '') return '-';
+    return String(value);
+  }
+
+  function normalizeAuditRows(rows) {
+    return rows.map(row => ({
+      date: row.createdAt ?? row.timestamp ?? '',
+      event: row.eventType ?? row.action ?? '',
+      result: row.result ?? row.status ?? '',
+      ip: row.clientIp ?? row.ipAddress ?? '',
+      trace: row.traceId ?? '',
+      raw: row
+    }));
+  }
+
+  function clearAuditFilters() {
+    document.getElementById('auditFilterEvent').value = '';
+    document.getElementById('auditFilterResult').value = '';
+    document.getElementById('auditFilterSearch').value = '';
+    auditGrid.page = 1;
+    applyAuditGrid();
+  }
+
+  function setAuditSort(sortBy) {
+    if (auditGrid.sortBy === sortBy) {
+      auditGrid.sortDir = auditGrid.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      auditGrid.sortBy = sortBy;
+      auditGrid.sortDir = sortBy === 'date' ? 'desc' : 'asc';
+    }
+    applyAuditGrid();
+  }
+
+  function changeAuditPage(delta) {
+    const totalPages = Math.max(1, Math.ceil(auditGrid.filteredRows.length / auditGrid.pageSize));
+    auditGrid.page = Math.min(totalPages, Math.max(1, auditGrid.page + delta));
+    renderAuditGrid();
+  }
+
+  function changeAuditPageSize() {
+    const selected = Number(document.getElementById('auditLocalPageSize').value || '10');
+    auditGrid.pageSize = selected > 0 ? selected : 10;
+    auditGrid.page = 1;
+    renderAuditGrid();
+  }
+
+  function compareAuditRows(a, b, key, dir) {
+    const factor = dir === 'asc' ? 1 : -1;
+    if (key === 'date') {
+      const aDate = new Date(a.date || 0).getTime();
+      const bDate = new Date(b.date || 0).getTime();
+      return (aDate - bDate) * factor;
+    }
+
+    const left = String(a[key] ?? '').toLowerCase();
+    const right = String(b[key] ?? '').toLowerCase();
+    if (left < right) return -1 * factor;
+    if (left > right) return 1 * factor;
+    return 0;
+  }
+
+  function applyAuditGrid() {
+    const eventFilter = (document.getElementById('auditFilterEvent').value || '').trim().toLowerCase();
+    const resultFilter = (document.getElementById('auditFilterResult').value || '').trim().toLowerCase();
+    const searchFilter = (document.getElementById('auditFilterSearch').value || '').trim().toLowerCase();
+
+    const filtered = auditGrid.rawRows.filter(row => {
+      const event = String(row.event ?? '').toLowerCase();
+      const result = String(row.result ?? '').toLowerCase();
+      const searchable = `${row.ip} ${row.trace} ${row.event} ${row.result}`.toLowerCase();
+
+      const matchesEvent = !eventFilter || event.includes(eventFilter);
+      const matchesResult = !resultFilter || result.includes(resultFilter);
+      const matchesSearch = !searchFilter || searchable.includes(searchFilter);
+
+      return matchesEvent && matchesResult && matchesSearch;
+    });
+
+    filtered.sort((a, b) => compareAuditRows(a, b, auditGrid.sortBy, auditGrid.sortDir));
+    auditGrid.filteredRows = filtered;
+    auditGrid.page = 1;
+    renderAuditGrid();
+  }
+
+  function renderAuditGrid() {
+    const total = auditGrid.filteredRows.length;
+    const totalPages = Math.max(1, Math.ceil(total / auditGrid.pageSize));
+    auditGrid.page = Math.min(totalPages, Math.max(1, auditGrid.page));
+
+    const start = (auditGrid.page - 1) * auditGrid.pageSize;
+    const end = start + auditGrid.pageSize;
+    const pageRows = auditGrid.filteredRows.slice(start, end);
+
+    const sortIcon = key => {
+      if (auditGrid.sortBy !== key) return '↕';
+      return auditGrid.sortDir === 'asc' ? '↑' : '↓';
+    };
+
+    const columns = [
+      { key: 'date', label: `Data ${sortIcon('date')}`, get: row => safeValue(row.date) },
+      { key: 'event', label: `Evento ${sortIcon('event')}`, get: row => safeValue(row.event) },
+      { key: 'result', label: `Resultado ${sortIcon('result')}`, get: row => safeValue(row.result) },
+      { key: 'ip', label: `IP ${sortIcon('ip')}`, get: row => safeValue(row.ip) },
+      { key: 'trace', label: `Trace ${sortIcon('trace')}`, get: row => safeValue(row.trace) }
+    ];
+
+    const target = document.getElementById('auditTableWrap');
+    if (!Array.isArray(pageRows) || pageRows.length === 0) {
+      target.innerHTML = '<div class="empty">Sem logs para os filtros informados.</div>';
+    } else {
+      const header = columns.map(column => (
+        `<th><button class="th-btn" onclick="setAuditSort('${column.key}')">${column.label}</button></th>`
+      )).join('');
+
+      const body = pageRows.map(row => {
+        const cells = columns.map(column => `<td>${column.get(row)}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
+
+      target.innerHTML = `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+    }
+
+    document.getElementById('auditPagerInfo').textContent = `${total} itens • página ${auditGrid.page}/${totalPages}`;
+    document.getElementById('auditPrevBtn').disabled = auditGrid.page <= 1;
+    document.getElementById('auditNextBtn').disabled = auditGrid.page >= totalPages;
+    document.getElementById('auditExportBtn').disabled = total === 0;
+  }
+
+  function csvEscape(value) {
+    const text = String(value ?? '');
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  function exportAuditCsv() {
+    const rows = auditGrid.filteredRows;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      show('auditOut', 'Nenhum item para exportar com os filtros atuais.');
+      setActionState('audit', 'error', 'sem dados');
+      return;
+    }
+
+    const header = ['data', 'evento', 'resultado', 'ip', 'trace'];
+    const lines = [header.map(csvEscape).join(',')];
+
+    for (const row of rows) {
+      const line = [row.date, row.event, row.result, row.ip, row.trace]
+        .map(csvEscape)
+        .join(',');
+      lines.push(line);
+    }
+
+    const csvContent = `\uFEFF${lines.join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit_grid_${stamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    show('auditOut', { exportedRows: rows.length, file: link.download, mode: 'filtered+sorted' });
+    setActionState('audit', 'success', `${rows.length} exportados`);
+  }
+
+  async function issueToken() {
+    setActionState('auth', 'loading');
+    setButtonBusy('authBtn', true);
+    try {
+      const data = await api('/api/v1/auth/token', {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: document.getElementById('clientId').value,
+          clientSecret: document.getElementById('clientSecret').value,
+          scope: document.getElementById('scope').value
+        })
+      });
+      accessToken = data.accessToken;
+      show('authOut', data);
+      setActionState('auth', 'success');
+    } catch (error) {
+      show('authOut', errorToText(error));
+      setActionState('auth', 'error');
+    } finally {
+      setButtonBusy('authBtn', false);
+    }
+  }
+
+  async function getAvailability() {
+    setActionState('availability', 'loading');
+    setButtonBusy('availabilityBtn', true);
+    try {
+      const checkIn = document.getElementById('checkIn').value;
+      const checkOut = document.getElementById('checkOut').value;
+      const roomType = document.getElementById('roomType').value;
+      const query = new URLSearchParams({ checkIn, checkOut });
+      if (roomType) query.set('roomType', roomType);
+      const data = await api(`/api/v1/reservations/availability?${query.toString()}`);
+      show('availabilityOut', data);
+
+      renderTable(
+        'availabilityTableWrap',
+        data,
+        [
+          { label: 'Room ID', get: row => safeValue(row.roomId) },
+          { label: 'Número', get: row => safeValue(row.roomNumber ?? row.number) },
+          { label: 'Tipo', get: row => safeValue(row.roomType ?? row.type) },
+          { label: 'Preço/noite', get: row => safeValue(row.pricePerNight ?? row.dailyRate) }
+        ],
+        'Nenhum quarto disponível no período.'
+      );
+
+      if (Array.isArray(data) && data.length > 0) {
+        document.getElementById('reserveRoomId').value = data[0].roomId;
+      }
+      setActionState('availability', 'success', `${Array.isArray(data) ? data.length : 0} itens`);
+    } catch (error) {
+      show('availabilityOut', errorToText(error));
+      renderTable('availabilityTableWrap', [], [], 'Falha ao carregar disponibilidade.');
+      setActionState('availability', 'error');
+    } finally {
+      setButtonBusy('availabilityBtn', false);
+    }
+  }
+
+  async function createReservation() {
+    setActionState('reservation', 'loading');
+    setButtonBusy('reservationBtn', true);
+    try {
+      const payload = {
+        roomId: document.getElementById('reserveRoomId').value,
+        guestFullName: document.getElementById('guestName').value,
+        checkIn: document.getElementById('reserveIn').value,
+        checkOut: document.getElementById('reserveOut').value,
+        earlyCheckInRequested: document.getElementById('early').value === 'true',
+        sourceChannel: document.getElementById('sourceChannel').value
+      };
+
+      const data = await api('/api/v1/reservations', {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify(payload)
+      });
+
+      show('reserveOutBox', data);
+      setActionState('reservation', 'success');
+    } catch (error) {
+      show('reserveOutBox', errorToText(error));
+      setActionState('reservation', 'error');
+    } finally {
+      setButtonBusy('reservationBtn', false);
+    }
+  }
+
+  async function getHousekeeping() {
+    setActionState('house', 'loading');
+    setButtonBusy('houseBtn', true);
+    try {
+      const date = document.getElementById('opDate').value;
+      const data = await api(`/api/housekeeping/route?operationDate=${encodeURIComponent(date)}`);
+      show('houseOut', data);
+
+      const routeItems = Array.isArray(data) ? data : (data.route ?? data.items ?? []);
+      renderTable(
+        'houseTableWrap',
+        routeItems,
+        [
+          { label: 'Ordem', get: row => safeValue(row.sequence ?? row.order) },
+          { label: 'Quarto', get: row => safeValue(row.roomNumber ?? row.roomId) },
+          { label: 'Prioridade', get: row => safeValue(row.priority ?? row.priorityScore) },
+          { label: 'Ação', get: row => safeValue(row.taskType ?? row.task ?? row.action) }
+        ],
+        'Nenhuma tarefa de housekeeping para a data.'
+      );
+      setActionState('house', 'success', `${routeItems.length} itens`);
+    } catch (error) {
+      show('houseOut', errorToText(error));
+      renderTable('houseTableWrap', [], [], 'Falha ao gerar rota.');
+      setActionState('house', 'error');
+    } finally {
+      setButtonBusy('houseBtn', false);
+    }
+  }
+
+  async function getAudit() {
+    setActionState('audit', 'loading');
+    setButtonBusy('auditBtn', true);
+    try {
+      const page = document.getElementById('auditPage').value;
+      const pageSize = document.getElementById('auditSize').value;
+      const data = await api(`/api/v1/admin/security-audit-logs?page=${page}&pageSize=${pageSize}`);
+      show('auditOut', data);
+
+      const rows = Array.isArray(data) ? data : (data.items ?? data.logs ?? []);
+      auditGrid.rawRows = normalizeAuditRows(rows);
+      applyAuditGrid();
+      setActionState('audit', 'success', `${auditGrid.filteredRows.length} itens`);
+    } catch (error) {
+      show('auditOut', errorToText(error));
+      renderTable('auditTableWrap', [], [], 'Falha ao consultar logs.');
+      document.getElementById('auditPagerInfo').textContent = 'Erro ao carregar auditoria';
+      setActionState('audit', 'error');
+    } finally {
+      setButtonBusy('auditBtn', false);
+    }
+  }
+
+  async function checkHealth() {
+    setActionState('health', 'loading');
+    setButtonBusy('healthBtn', true);
+    try {
+      const ready = await fetch('/health/ready').then(r => r.text());
+      const diag = await fetch('/health/diagnostics').then(async r => ({ status: r.status, body: await r.text() }));
+      show('healthOut', { ready, diagnostics: diag });
+      setActionState('health', diag.status >= 400 ? 'error' : 'success');
+    } catch (error) {
+      show('healthOut', errorToText(error));
+      setActionState('health', 'error');
+    } finally {
+      setButtonBusy('healthBtn', false);
+    }
+  }
+
+  setTodayDefaults();
+  checkHealth();
+</script>
+</body>
+</html>
